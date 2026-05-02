@@ -15,9 +15,9 @@ function formatDate(value) {
 
 export default function StudentResultSummary({ data }) {
   const assessment = data?.latestAssessment;
-  const categories = data?.latestAssessment?.categories || {};
-  const score = data?.latestAssessment?.score || 0;
-  const riskLevel = data?.latestAssessment?.riskLevel || "Low";
+  const categories = data?.latestAssessment?.categories || data?.latestAssessment?.categoryScores || {};
+  const score = data?.latestAssessment?.score ?? data?.latestAssessment?.totalScore ?? 0;
+  const riskLevel = data?.latestAssessment?.riskLevel ?? "Low";
 
   if (!assessment) {
     return (

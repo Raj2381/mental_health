@@ -245,7 +245,7 @@ export default function Profile() {
       setLastUpdated(data?.updatedAt || null);
       setActivitySummary({
         streak: Number(data?.streak || 0),
-        riskScore: Number(data?.riskScore || data?.latestAssessment?.score || 0),
+        riskScore: Number(data?.riskScore ?? data?.latestAssessment?.score ?? 0),
         completion: Number(data?.dailyProgress?.percent || 0),
       });
 

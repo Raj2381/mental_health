@@ -116,8 +116,9 @@ export default function Dashboard() {
           name: data?.name || data?.displayName || "Student",
           streak: Number(data?.streak || 0),
           lastActiveDate: data?.lastActiveDate || null,
-          riskScore: score,
-          riskLevel,
+          lastAssessment: data?.lastAssessment || null,
+          riskScore: Number(data?.riskScore ?? data?.latestAssessment?.score ?? 0),
+          riskLevel: String(data?.riskLevel ?? data?.latestAssessment?.riskLevel ?? "Low"),
           assignedCounsellorId: data?.assignedCounsellorId || "",
           photoURL: data?.photoURL || data?.profile?.profileImage || "",
         },
@@ -188,12 +189,12 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, [dashboardData.profile?.assignedCounsellorId]);
 
-  const score = Number(dashboardData.profile?.riskScore || dashboardData.assessment?.score || 0);
-  const riskLevel = dashboardData.profile?.riskLevel || dashboardData.assessment?.riskLevel || "Low";
+  const score = Number(dashboardData.assessment?.score ?? dashboardData.profile?.riskScore ?? 0);
+  const riskLevel = dashboardData.assessment?.riskLevel || dashboardData.profile?.riskLevel || "Low";
   const stress = dashboardData.assessment?.categories || {};
   const progress = dashboardData.progress;
   const weeklyStats = dashboardData.weeklyStats;
-  const hasAssessment = Boolean(dashboardData.assessment);
+  const hasAssessment = Boolean(dashboardData.assessment?.score != null || dashboardData.profile?.lastAssessment);
   const hasProgressData = Number(progress.totalTasks || 0) > 0;
 
   const riskMeta = getRiskMeta({ riskLevel, score });
