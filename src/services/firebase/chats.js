@@ -22,40 +22,78 @@ export function buildChatId(userId1, userId2) {
   return [userId1, userId2].sort().join("_");
 }
 
+function toMillis(value) {
+  if (!value) return 0;
+  if (typeof value?.toMillis === "function") return value.toMillis();
+  if (typeof value?.seconds === "number") return value.seconds * 1000;
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function normalizeParticipantNames(data = {}) {
+  if (data?.participantNames && typeof data.participantNames === "object") {
+    return data.participantNames;
+  }
+
+  const profiles = data?.participantProfiles || {};
+  return Object.entries(profiles).reduce((acc, [id, profile]) => {
+    acc[id] = profile?.name || id;
+    return acc;
+  }, {});
+}
+
 export async function getOrCreateConversation(studentId, counsellorId) {
   if (!studentId || !counsellorId) return null;
 
   const conversationId = buildChatId(studentId, counsellorId);
-  const convRef = doc(db, COLLECTIONS.conversations, conversationId);
-  const snapshot = await getDoc(convRef);
+  const [studentSnap, counsellorSnap] = await Promise.all([
+    getDoc(doc(db, COLLECTIONS.users, studentId)),
+    getDoc(doc(db, COLLECTIONS.users, counsellorId)),
+  ]);
 
-  if (!snapshot.exists()) {
-    await setDoc(convRef, {
-      participants: [studentId, counsellorId],
-      participantRoles: { [studentId]: "student", [counsellorId]: "counsellor" },
-      lastMessage: "",
-      lastMessageSenderId: null,
-      lastMessageTimestamp: serverTimestamp(),
+  const studentData = studentSnap.data() || {};
+  const counsellorData = counsellorSnap.data() || {};
+  const studentName = studentData?.name || studentData?.profile?.name || "Student";
+  const counsellorName = counsellorData?.name || counsellorData?.profile?.name || "Counsellor";
+
+  const conversationPayload = {
+    participants: [studentId, counsellorId],
+    participantRoles: { [studentId]: "student", [counsellorId]: "counsellor" },
+    participantNames: { [studentId]: studentName, [counsellorId]: counsellorName },
+    lastMessage: "",
+    lastMessageSenderId: null,
+    lastMessageTimestamp: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(
+    doc(db, COLLECTIONS.conversations, conversationId),
+    {
+      ...conversationPayload,
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-  }
+    },
+    { merge: true }
+  );
 
-  const chatRef = doc(db, COLLECTIONS.chats, conversationId);
-  const chatSnap = await getDoc(chatRef);
-  if (!chatSnap.exists()) {
-    await setDoc(chatRef, {
+  await setDoc(
+    doc(db, COLLECTIONS.chats, conversationId),
+    {
       chatId: conversationId,
       studentId,
       counsellorId,
       participants: [studentId, counsellorId],
+      participantProfiles: {
+        [studentId]: { id: studentId, name: studentName, role: "student" },
+        [counsellorId]: { id: counsellorId, name: counsellorName, role: "counsellor" },
+      },
       lastMessage: "",
       lastMessageSenderId: null,
       isEnabled: true,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
-  }
+    },
+    { merge: true }
+  );
 
   return conversationId;
 }
@@ -63,17 +101,20 @@ export async function getOrCreateConversation(studentId, counsellorId) {
 export function watchConversations(userId, callback) {
   if (!userId) return () => {};
 
-  const q = query(
-    collection(db, COLLECTIONS.conversations),
-    where("participants", "array-contains", userId),
-    orderBy("updatedAt", "desc")
-  );
+  const q = query(collection(db, COLLECTIONS.chats), where("participants", "array-contains", userId));
 
   return onSnapshot(q, (snap) => {
-    const conversations = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const conversations = snap.docs
+      .map((chatDoc) => {
+        const data = chatDoc.data() || {};
+        return {
+          id: chatDoc.id,
+          ...data,
+          participantNames: normalizeParticipantNames(data),
+        };
+      })
+      .sort((left, right) => toMillis(right?.updatedAt) - toMillis(left?.updatedAt));
+
     callback(conversations);
   });
 }
@@ -81,39 +122,120 @@ export function watchConversations(userId, callback) {
 export function watchConversationMessages(conversationId, callback) {
   if (!conversationId) return () => {};
 
-  const q = query(
+  let legacyMessages = [];
+  let nestedMessages = [];
+
+  const emitMergedMessages = () => {
+    const merged = [...legacyMessages, ...nestedMessages]
+      .sort((left, right) => {
+        const leftTime = toMillis(left?.createdAt || left?.timestamp);
+        const rightTime = toMillis(right?.createdAt || right?.timestamp);
+        return leftTime - rightTime;
+      });
+
+    callback(merged);
+  };
+
+  const legacyQuery = query(
     collection(db, COLLECTIONS.messages),
     where("conversationId", "==", conversationId),
     orderBy("createdAt", "asc")
   );
 
-  return onSnapshot(q, (snap) => {
-    const messages = snap.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    callback(messages);
-  });
+  const nestedQuery = query(
+    collection(db, COLLECTIONS.chats, conversationId, "messages"),
+    orderBy("timestamp", "asc")
+  );
+
+  const unsubLegacy = onSnapshot(
+    legacyQuery,
+    (snap) => {
+      legacyMessages = snap.docs.map((messageDoc) => {
+        const data = messageDoc.data() || {};
+        return {
+          id: messageDoc.id,
+          ...data,
+          createdAt: data?.createdAt || data?.timestamp || null,
+        };
+      });
+      emitMergedMessages();
+    },
+    (error) => {
+      console.warn("Legacy message stream failed:", error);
+      legacyMessages = [];
+      emitMergedMessages();
+    }
+  );
+
+  const unsubNested = onSnapshot(
+    nestedQuery,
+    (snap) => {
+      nestedMessages = snap.docs.map((messageDoc) => {
+        const data = messageDoc.data() || {};
+        return {
+          id: messageDoc.id,
+          ...data,
+          createdAt: data?.createdAt || data?.timestamp || null,
+        };
+      });
+      emitMergedMessages();
+    },
+    (error) => {
+      console.warn("Nested message stream failed:", error);
+      nestedMessages = [];
+      emitMergedMessages();
+    }
+  );
+
+  return () => {
+    unsubLegacy?.();
+    unsubNested?.();
+  };
 }
 
 export async function sendMessage(conversationId, text, userId, userRole) {
   if (!conversationId || !text?.trim() || !userId) return;
 
   try {
-    const messageRef = collection(db, COLLECTIONS.messages);
-    await addDoc(messageRef, {
+    const trimmedText = text.trim();
+
+    const chatRef = doc(db, COLLECTIONS.chats, conversationId);
+    const convRef = doc(db, COLLECTIONS.conversations, conversationId);
+    const [chatSnap, convSnap] = await Promise.all([getDoc(chatRef), getDoc(convRef)]);
+
+    const chatData = chatSnap.data() || {};
+    const conversationData = convSnap.data() || {};
+    const participants = chatData?.participants || conversationData?.participants || [];
+
+    if (!participants.includes(userId)) {
+      throw new Error("User is not a participant of this conversation");
+    }
+
+    if (!chatSnap.exists()) {
+      await setDoc(
+        chatRef,
+        {
+          chatId: conversationId,
+          participants,
+          lastMessage: "",
+          lastMessageSenderId: null,
+          isEnabled: true,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+
+    await addDoc(collection(db, COLLECTIONS.chats, conversationId, "messages"), {
       conversationId,
       chatId: conversationId,
       senderId: userId,
       senderRole: userRole,
-      text: text.trim(),
+      text: trimmedText,
+      timestamp: serverTimestamp(),
       createdAt: serverTimestamp(),
     });
-
-    // Get conversation details to find recipient
-    const convRef = doc(db, COLLECTIONS.conversations, conversationId);
-    const convSnap = await getDoc(convRef);
-    const conversation = convSnap.data() || {};
     
     // Get sender details
     const senderRef = doc(db, COLLECTIONS.users, userId);
@@ -122,8 +244,7 @@ export async function sendMessage(conversationId, text, userId, userRole) {
     const senderName = senderData?.name || senderData?.displayName || "Someone";
 
     // Find recipient (other participant)
-    const recipients = conversation?.participants || [];
-    const recipientId = recipients.find((id) => id !== userId);
+    const recipientId = participants.find((id) => id !== userId);
 
     // Send notification to recipient with role-specific message
     if (recipientId) {
@@ -133,21 +254,28 @@ export async function sendMessage(conversationId, text, userId, userRole) {
         userId: recipientId,
         type: "message",
         title: `💬 New message from ${senderName}`,
-        message: `[${roleLabel}] ${text.trim().substring(0, 50)}${text.trim().length > 50 ? "..." : ""}`,
+        message: `[${roleLabel}] ${trimmedText.substring(0, 50)}${trimmedText.length > 50 ? "..." : ""}`,
       });
     }
 
-    await updateDoc(doc(db, COLLECTIONS.conversations, conversationId), {
-      lastMessage: text.trim(),
-      lastMessageSenderId: userId,
-      updatedAt: serverTimestamp(),
-    });
+    await setDoc(
+      convRef,
+      {
+        participants,
+        lastMessage: trimmedText,
+        lastMessageSenderId: userId,
+        lastMessageTimestamp: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
 
     await setDoc(
-      doc(db, COLLECTIONS.chats, conversationId),
+      chatRef,
       {
         chatId: conversationId,
-        lastMessage: text.trim(),
+        participants,
+        lastMessage: trimmedText,
         lastMessageSenderId: userId,
         updatedAt: serverTimestamp(),
       },
@@ -424,39 +552,7 @@ export async function getOrCreateStudentCounsellorConversation(studentId, counse
   if (!studentId || !counsellorId) return null;
 
   try {
-    const conversationId = buildChatId(studentId, counsellorId);
-    const convRef = doc(db, COLLECTIONS.conversations, conversationId);
-    const snapshot = await getDoc(convRef);
-
-    if (!snapshot.exists()) {
-      // Get both user details
-      const [studentSnap, counsellorSnap] = await Promise.all([
-        getDoc(doc(db, COLLECTIONS.users, studentId)),
-        getDoc(doc(db, COLLECTIONS.users, counsellorId)),
-      ]);
-
-      const studentData = studentSnap.data() || {};
-      const counsellorData = counsellorSnap.data() || {};
-
-      await setDoc(convRef, {
-        participants: [studentId, counsellorId],
-        participantRoles: { 
-          [studentId]: ROLES.STUDENT, 
-          [counsellorId]: ROLES.COUNSELLOR 
-        },
-        participantNames: {
-          [studentId]: studentData.name || "Student",
-          [counsellorId]: counsellorData.name || "Counsellor",
-        },
-        lastMessage: "",
-        lastMessageSenderId: null,
-        lastMessageTimestamp: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-    }
-
-    return conversationId;
+    return await getOrCreateConversation(studentId, counsellorId);
   } catch (error) {
     console.error("Error in getOrCreateStudentCounsellorConversation:", error);
     return null;
