@@ -1,0 +1,131 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "chats",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "participants",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "Descending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "messages",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "conversationId",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "Ascending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "role",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "assignedCounsellorId",
+          "order": "Ascending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "assessments",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "riskLevel",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "Descending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "assessments",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "primaryConcern",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "Descending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "dailyMetrics",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "date",
+          "order": "Descending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "assessments",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "Descending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "dailyActivities",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "dateKey",
+          "order": "Descending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "counsellorMatches",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "studentId",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "Descending"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

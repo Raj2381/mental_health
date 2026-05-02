@@ -1,0 +1,167 @@
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Variable.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    /* Light mode - Clean, minimalistic wellness theme */
+    --bg-main: #FAFAF8;
+    --bg-accent: #F5F3F0;
+    --panel: #FFFFFF;
+    --panel-strong: #FEFDFB;
+    --text-main: #2C2C2C;
+    --text-muted: #7A7A7A;
+    --border-soft: #E8E8E6;
+    --shadow-soft: rgba(0, 0, 0, 0.04);
+    --shadow-strong: rgba(0, 0, 0, 0.08);
+    /* Wellness solid colors */
+    --primary: #8B9E83;
+    --primary-dark: #6B7D63;
+    --secondary: #A67C52;
+    --accent: #D4A574;
+    --success: #6BA876;
+    --warning: #C9A54A;
+    --danger: #C85A54;
+  }
+
+  .dark {
+    color-scheme: dark;
+    /* Dark mode - Clean dark wellness */
+    --bg-main: #1A1918;
+    --bg-accent: #2D2B28;
+    --panel: #252422;
+    --panel-strong: #2D2B28;
+    --text-main: #F0F0F0;
+    --text-muted: #A9A9A9;
+    --border-soft: #3D3B38;
+    --shadow-soft: rgba(0, 0, 0, 0.2);
+    --shadow-strong: rgba(0, 0, 0, 0.4);
+    /* Wellness solid colors */
+    --primary: #8B9E83;
+    --primary-light: #A8B89A;
+    --secondary: #D4A574;
+    --accent: #C9956B;
+    --success: #7BB884;
+    --warning: #D4B860;
+    --danger: #D47166;
+  }
+
+  html {
+    font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    transition: background-color 300ms ease, color 300ms ease;
+    line-height: 1.4;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply border backdrop-blur-0 rounded-lg;
+    border-color: var(--border-soft);
+    background: var(--panel);
+    box-shadow: 0 2px 8px var(--shadow-soft);
+  }
+
+  .surface-card {
+    @apply border backdrop-blur-0 rounded-lg;
+    border-color: var(--border-soft);
+    background: var(--panel-strong);
+    box-shadow: 0 1px 3px var(--shadow-soft);
+  }
+
+  .readable-label {
+    color: var(--text-muted);
+  }
+
+  .readable-muted {
+    color: var(--text-muted);
+  }
+
+  .field-control {
+    @apply w-full rounded-lg border px-3 py-2.5 outline-none transition text-sm;
+    border-color: var(--border-soft);
+    background: var(--panel);
+    color: var(--text-main);
+    box-shadow: none;
+  }
+
+  .field-control::placeholder {
+    color: var(--text-muted);
+  }
+
+  .field-control:focus {
+    border-color: var(--primary);
+    box-shadow: none;
+    transform: none;
+  }
+
+  .interactive-surface {
+    @apply border transition-colors rounded-lg;
+    border-color: var(--border-soft);
+    background: var(--panel);
+  }
+
+  .interactive-surface:hover {
+    background: var(--bg-accent);
+    border-color: var(--text-muted);
+  }
+
+  .soft-text {
+    color: var(--text-muted);
+  }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.96); opacity: 0.55; }
+  70% { transform: scale(1.18); opacity: 0; }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-130%) skewX(-18deg); }
+  100% { transform: translateX(220%) skewX(-18deg); }
+}
+
+.animated-gradient {
+  background-size: 220% 220%;
+  animation: gradient-shift 14s ease infinite;
+}
+
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+.shimmer-sweep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+  animation: shimmer 3.2s linear infinite;
+}
