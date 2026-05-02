@@ -120,9 +120,9 @@ function validateProfile(profile, role) {
 function InputField({ label, name, value, onChange, icon: Icon, type = "text", readOnly = false, placeholder = "", error = "", tooltip = "" }) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/65" title={tooltip || undefined}>{label}</label>
+      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--text-muted)]" title={tooltip || undefined}>{label}</label>
       <div className="relative">
-        <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/45" />
+        <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--text-muted)]/80" />
         <input
           name={name}
           type={type}
@@ -130,11 +130,11 @@ function InputField({ label, name, value, onChange, icon: Icon, type = "text", r
           onChange={onChange}
           readOnly={readOnly}
           placeholder={placeholder}
-          className={`w-full rounded-xl border bg-white/5 px-10 py-2.5 text-sm text-white placeholder:text-white/35 outline-none transition ${
+          className={`w-full rounded-xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] px-10 py-2.5 text-sm text-[color:var(--text-main)] placeholder:text-[color:var(--text-muted)] outline-none transition ${
             error
               ? "border-rose-400/80 focus:border-rose-400"
               : "border-white/15 focus:border-sky-400"
-          } ${readOnly ? "cursor-not-allowed bg-white/10 text-white/70" : ""}`}
+          } ${readOnly ? "cursor-not-allowed bg-[color:var(--bg-accent)] text-[color:var(--text-muted)]" : ""}`}
         />
       </div>
       {error ? <p className="text-xs text-rose-300">{error}</p> : null}
@@ -145,7 +145,7 @@ function InputField({ label, name, value, onChange, icon: Icon, type = "text", r
 function TextareaField({ label, name, value, onChange, placeholder = "", error = "", readOnly = false, tooltip = "" }) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/65" title={tooltip || undefined}>{label}</label>
+      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--text-muted)]" title={tooltip || undefined}>{label}</label>
       <textarea
         name={name}
         value={value || ""}
@@ -153,11 +153,11 @@ function TextareaField({ label, name, value, onChange, placeholder = "", error =
         placeholder={placeholder}
         readOnly={readOnly}
         rows={4}
-        className={`w-full rounded-xl border bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none transition ${
+        className={`w-full rounded-xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] px-3 py-2.5 text-sm text-[color:var(--text-main)] placeholder:text-[color:var(--text-muted)] outline-none transition ${
           error
             ? "border-rose-400/80 focus:border-rose-400"
             : "border-white/15 focus:border-sky-400"
-        } ${readOnly ? "cursor-not-allowed bg-white/10 text-white/70" : ""}`}
+        } ${readOnly ? "cursor-not-allowed bg-[color:var(--bg-accent)] text-[color:var(--text-muted)]" : ""}`}
       />
       {error ? <p className="text-xs text-rose-300">{error}</p> : null}
     </div>
@@ -166,18 +166,18 @@ function TextareaField({ label, name, value, onChange, placeholder = "", error =
 
 function CollapsibleSection({ title, icon: Icon, subtitle, isOpen, onToggle, children }) {
   return (
-    <div className="rounded-2xl border border-white/12 bg-white/5 p-5 backdrop-blur-xl">
+    <div className="surface-card rounded-2xl p-5">
       <button type="button" onClick={onToggle} className="flex w-full items-center justify-between text-left">
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-gradient-to-br from-sky-500/25 to-violet-500/25 p-2.5">
             <Icon className="h-4 w-4 text-sky-200" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-white/90">{title}</h3>
-            {subtitle ? <p className="mt-1 text-xs text-white/55">{subtitle}</p> : null}
+            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--text-main)]">{title}</h3>
+            {subtitle ? <p className="mt-1 text-xs text-[color:var(--text-muted)]">{subtitle}</p> : null}
           </div>
         </div>
-        {isOpen ? <ChevronUp className="h-4 w-4 text-white/70" /> : <ChevronDown className="h-4 w-4 text-white/70" />}
+        {isOpen ? <ChevronUp className="h-4 w-4 text-[color:var(--text-muted)]" /> : <ChevronDown className="h-4 w-4 text-[color:var(--text-muted)]" />}
       </button>
       <AnimatePresence initial={false}>
         {isOpen ? (
@@ -504,7 +504,7 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl p-6">
-        <div className="rounded-2xl border border-white/15 bg-white/5 p-6 text-white/80 shadow-sm backdrop-blur-xl">Loading profile...</div>
+        <div className="surface-card rounded-2xl p-6 text-[color:var(--text-muted)]">Loading profile...</div>
       </div>
     );
   }
@@ -530,7 +530,7 @@ export default function Profile() {
       <Motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl border border-white/12 bg-[linear-gradient(135deg,rgba(15,23,42,0.78),rgba(30,41,59,0.72),rgba(59,130,246,0.15))] p-6 shadow-[0_24px_80px_-38px_rgba(59,130,246,0.85)] backdrop-blur-2xl"
+        className="rounded-3xl border border-[color:var(--border-soft)] bg-[linear-gradient(135deg,rgba(255,255,255,0.86),rgba(248,250,252,0.8),rgba(125,211,252,0.18))] p-6 shadow-[0_24px_80px_-38px_rgba(59,130,246,0.35)] backdrop-blur-2xl dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.78),rgba(30,41,59,0.72),rgba(59,130,246,0.15))] dark:shadow-[0_24px_80px_-38px_rgba(59,130,246,0.85)]"
       >
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="flex items-center gap-4">
@@ -538,28 +538,28 @@ export default function Profile() {
               <img
                 src={selectedViewProfile?.photoURL || selectedViewProfile?.profileImage || profile.profileImage || profile.photoURL || "https://ui-avatars.com/api/?name=Student&background=1E293B&color=E2E8F0"}
                 alt="Profile"
-                className="h-20 w-20 rounded-2xl border border-white/20 object-cover"
+                className="h-20 w-20 rounded-2xl border border-[color:var(--border-soft)] object-cover"
               />
               {role !== "admin" ? (
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 rounded-full border border-white/25 bg-white/20 p-2 text-white shadow"
+                  className="absolute -bottom-2 -right-2 rounded-full border border-[color:var(--border-soft)] bg-[color:var(--panel)] p-2 text-[color:var(--text-main)] shadow"
                 >
                   <Camera className="h-4 w-4" />
                 </button>
               ) : null}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{selectedViewProfile?.name || profile.name || "User Profile"}</h1>
-              <p className="text-sm text-white/65">{selectedViewProfile?.email || profile.email || "No email"}</p>
+              <h1 className="text-2xl font-bold text-[color:var(--text-main)]">{selectedViewProfile?.name || profile.name || "User Profile"}</h1>
+              <p className="text-sm text-[color:var(--text-muted)]">{selectedViewProfile?.email || profile.email || "No email"}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${roleBadge.color}`}>{roleBadge.label}</span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-white/80">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border-soft)] bg-[color:var(--panel)] px-3 py-1 text-xs text-[color:var(--text-main)]">
                   <span className={`h-2 w-2 rounded-full ${syncMeta.dot}`} />
                   <span className={syncMeta.tone}>{syncMeta.text}</span>
                 </span>
-                <span className="inline-flex items-center gap-1 text-xs text-white/60">
+                <span className="inline-flex items-center gap-1 text-xs text-[color:var(--text-muted)]">
                   <Clock3 className="h-3.5 w-3.5" /> Last updated: {formatLastUpdated(lastUpdated)}
                 </span>
               </div>
@@ -571,7 +571,7 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={() => setIsEditing((prev) => !prev)}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+                className="inline-flex items-center gap-2 rounded-xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] px-4 py-2 text-sm font-semibold text-[color:var(--text-main)] transition hover:bg-[color:var(--bg-accent)]"
               >
                 {isEditing ? <Eye className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
                 {isEditing ? "View Mode" : "Edit Profile"}
@@ -598,46 +598,46 @@ export default function Profile() {
         />
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/60">Streak</p>
-            <p className="mt-2 flex items-center gap-2 text-2xl font-semibold text-white"><Flame className="h-5 w-5 text-orange-300" /> {activitySummary.streak}</p>
+          <div className="rounded-2xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-muted)]">Streak</p>
+            <p className="mt-2 flex items-center gap-2 text-2xl font-semibold text-[color:var(--text-main)]"><Flame className="h-5 w-5 text-orange-400" /> {activitySummary.streak}</p>
           </div>
-          <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/60">Risk Score</p>
-            <p className="mt-2 flex items-center gap-2 text-2xl font-semibold text-white"><Activity className="h-5 w-5 text-rose-300" /> {activitySummary.riskScore}</p>
+          <div className="rounded-2xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-muted)]">Risk Score</p>
+            <p className="mt-2 flex items-center gap-2 text-2xl font-semibold text-[color:var(--text-main)]"><Activity className="h-5 w-5 text-rose-400" /> {activitySummary.riskScore}</p>
           </div>
-          <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/60">Completion</p>
-            <p className="mt-2 flex items-center gap-2 text-2xl font-semibold text-white"><BarChart3 className="h-5 w-5 text-sky-300" /> {activitySummary.completion}%</p>
+          <div className="rounded-2xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-muted)]">Completion</p>
+            <p className="mt-2 flex items-center gap-2 text-2xl font-semibold text-[color:var(--text-main)]"><BarChart3 className="h-5 w-5 text-sky-400" /> {activitySummary.completion}%</p>
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-white/15 bg-white/5 p-4">
+        <div className="mt-5 rounded-2xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Profile Completion</p>
-              <p className="mt-1 text-2xl font-bold text-white">{completionPercent}%</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--text-muted)]">Profile Completion</p>
+              <p className="mt-1 text-2xl font-bold text-[color:var(--text-main)]">{completionPercent}%</p>
             </div>
-            <BadgeCheck className="h-6 w-6 text-emerald-300" />
+            <BadgeCheck className="h-6 w-6 text-emerald-500" />
           </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-[color:var(--bg-accent)]">
             <div className="h-full bg-gradient-to-r from-sky-500 via-violet-500 to-emerald-500" style={{ width: `${completionPercent}%` }} />
           </div>
-          <p className="mt-3 text-sm text-white/70">{featureUnlockMessage}</p>
+          <p className="mt-3 text-sm text-[color:var(--text-muted)]">{featureUnlockMessage}</p>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
           {badges.map((badge) => (
-            <span key={badge} className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white/85">{badge}</span>
+            <span key={badge} className="rounded-full border border-[color:var(--border-soft)] bg-[color:var(--panel)] px-3 py-1 text-xs font-semibold text-[color:var(--text-main)]">{badge}</span>
           ))}
         </div>
       </Motion.div>
 
       {role !== "student" ? (
-        <div className="rounded-2xl border border-white/12 bg-white/5 p-5 shadow-sm backdrop-blur-xl">
+        <div className="surface-card rounded-2xl p-5">
           <div className="mb-4 flex items-center gap-2">
             {role === "admin" ? <Shield className="h-4 w-4 text-rose-300" /> : <UserCheck className="h-4 w-4 text-violet-300" />}
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/85">{role === "admin" ? "All Users" : "Assigned Students"}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--text-main)]">{role === "admin" ? "All Users" : "Assigned Students"}</p>
           </div>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {viewerList.map((item) => (
@@ -648,15 +648,15 @@ export default function Profile() {
                 className={`rounded-xl border p-3 text-left transition ${
                   selectedUserId === item.id
                     ? "border-sky-500/80 bg-sky-500/20"
-                    : "border-white/15 bg-white/5 hover:border-white/30"
+                    : "border-[color:var(--border-soft)] bg-[color:var(--panel)] hover:bg-[color:var(--bg-accent)]"
                 }`}
               >
-                <p className="text-sm font-semibold text-white">{item?.profile?.name || item?.name || "Unnamed User"}</p>
-                <p className="text-xs text-white/70">{item?.profile?.email || item?.email || "No email"}</p>
-                <p className="mt-1 text-xs text-white/55">Role: {String(item?.role || "student")}</p>
+                <p className="text-sm font-semibold text-[color:var(--text-main)]">{item?.profile?.name || item?.name || "Unnamed User"}</p>
+                <p className="text-xs text-[color:var(--text-muted)]">{item?.profile?.email || item?.email || "No email"}</p>
+                <p className="mt-1 text-xs text-[color:var(--text-muted)]">Role: {String(item?.role || "student")}</p>
               </button>
             ))}
-            {viewerList.length === 0 ? <p className="text-sm text-white/70">No users found.</p> : null}
+            {viewerList.length === 0 ? <p className="text-sm text-[color:var(--text-muted)]">No users found.</p> : null}
           </div>
         </div>
       ) : null}
@@ -687,7 +687,7 @@ export default function Profile() {
           onToggle={() => setOpenSections((prev) => ({ ...prev, role: !prev.role }))}
         >
           {roleFields.length === 0 ? (
-            <p className="text-sm text-white/70">Admin accounts use a minimal profile layout.</p>
+            <p className="text-sm text-[color:var(--text-muted)]">Admin accounts use a minimal profile layout.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {roleFields.map((field) => (
@@ -738,7 +738,7 @@ export default function Profile() {
               type="button"
               onClick={handlePasswordReset}
               disabled={accountLoading.reset || accountLoading.revoke || accountLoading.delete}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] px-4 py-3 text-sm font-semibold text-[color:var(--text-main)] transition hover:bg-[color:var(--bg-accent)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <KeyRound className="h-4 w-4" /> {accountLoading.reset ? "Sending..." : "Change Password"}
             </button>
@@ -746,7 +746,7 @@ export default function Profile() {
               type="button"
               onClick={handleRevokeSessions}
               disabled={accountLoading.reset || accountLoading.revoke || accountLoading.delete}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[color:var(--border-soft)] bg-[color:var(--panel)] px-4 py-3 text-sm font-semibold text-[color:var(--text-main)] transition hover:bg-[color:var(--bg-accent)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <LogOut className="h-4 w-4" /> {accountLoading.revoke ? "Processing..." : "Logout All Devices"}
             </button>
@@ -814,8 +814,8 @@ export default function Profile() {
         ) : null}
       </AnimatePresence>
 
-      <div className="flex items-center justify-center text-xs text-white/70">
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 backdrop-blur">
+      <div className="flex items-center justify-center text-xs text-[color:var(--text-muted)]">
+        <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border-soft)] bg-[color:var(--panel)] px-3 py-1.5 backdrop-blur text-[color:var(--text-muted)]">
           <Users className="h-3.5 w-3.5" />
           Real-time profile sync enabled
         </span>

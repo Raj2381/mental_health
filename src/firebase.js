@@ -4,12 +4,12 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAWZYbRRrTWqpzAnIW4wBS75vTr1kjBAp0",
-  authDomain: "student-wellness-hub-692b9.firebaseapp.com",
-  projectId: "student-wellness-hub-692b9",
-  storageBucket: "student-wellness-hub-692b9.appspot.com",
-  messagingSenderId: "572871284727",
-  appId: "1:572871284727:web:b3ecf01a36799759da00f2",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
