@@ -72,11 +72,27 @@ export default function Signup() {
       // Keep Firebase auth as-is
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
-      // Determine role only from the admin code check. Do NOT trust any role value
-      // that may come from the UI - we derive the role here.
-      const roleToSave = adminCode === ADMIN_CODE ? "admin" : "student";
+      // Determine role based on user selection, with admin code validation
+      let roleToSave = selectedRole; // Start with selected role
+      
+      // If user selected "admin", validate the admin code
+      if (selectedRole === "admin") {
+        if (adminCode !== ADMIN_CODE) {
+          setError("Invalid admin code");
+          setLoading(false);
+          return;
+        }
+        roleToSave = "admin";
+      } else if (selectedRole === "counsellor") {
+        roleToSave = "counsellor";
+      } else {
+        roleToSave = "student";
+      }
 
-      // Store user record in Firestore with the computed role
+      console.log("Selected role:", selectedRole);
+      console.log("Role sent to signup:", roleToSave);
+
+      // Store user record in Firestore with the correct role
       await setDoc(doc(db, "users", userCred.user.uid), {
         name: name.trim(),
         email: email.trim(),
@@ -85,14 +101,25 @@ export default function Signup() {
         createdAt: serverTimestamp(),
       });
 
+      console.log("Role saved in DB:", roleToSave);
+
       // Save minimal local state and navigate
-      localStorage.setItem("user", JSON.stringify({ id: userCred.user.uid, name, email, role: roleToSave }));
+      const userObj = { id: userCred.user.uid, name, email, role: roleToSave };
+      localStorage.setItem("user", JSON.stringify(userObj));
       localStorage.setItem("auth_token", userCred.user.uid);
+
+      console.log("User stored in localStorage:", userObj);
 
       setSuccessMessage("Welcome! Redirecting to your dashboard...");
       setTimeout(() => {
-        if (roleToSave === "admin") navigate("/dashboard/admin", { replace: true });
-        else navigate("/dashboard/student", { replace: true });
+        const navigateRole = roleToSave.toLowerCase();
+        if (navigateRole === "admin") {
+          navigate("/dashboard/admin", { replace: true });
+        } else if (navigateRole === "counsellor") {
+          navigate("/dashboard/counsellor", { replace: true });
+        } else {
+          navigate("/dashboard/student", { replace: true });
+        }
       }, 1500);
     } catch (err) {
       setError(err?.message || "Signup failed");
