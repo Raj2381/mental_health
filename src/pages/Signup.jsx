@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { motion as Motion } from "framer-motion";
-import { Heart, Eye, EyeOff, CheckCircle, ArrowRight, Sparkles, Shield } from "lucide-react";
+import { Heart, Eye, EyeOff, CheckCircle, ArrowRight, Sparkles, Shield, BookOpen, Stethoscope, Lock } from "lucide-react";
 
 // Simple admin code for signup elevation. In production, don't hardcode secrets.
 const ADMIN_CODE = "RAJ123";
@@ -38,6 +38,7 @@ const C = {
 export default function Signup() {
   const navigate = useNavigate();
 
+  const [selectedRole, setSelectedRole] = useState("student"); // "student", "counsellor", "admin"
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,7 +56,7 @@ export default function Signup() {
     if (!password) return "Password is required";
     if (password.length < 6) return "Password must be at least 6 characters";
     if (password !== confirmPassword) return "Passwords do not match";
-    if (adminCode && adminCode !== ADMIN_CODE) return "Invalid admin code";
+    if (selectedRole === "admin" && adminCode && adminCode !== ADMIN_CODE) return "Invalid admin code";
     return null;
   }
 
@@ -371,11 +372,124 @@ export default function Signup() {
 
           {/* Form */}
           <form onSubmit={onSubmit}>
-            {/* Name field */}
+            {/* ROLE SELECTOR SECTION */}
             <Motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
+              style={{ marginBottom: 28 }}
+            >
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.ink,
+                  marginBottom: 12,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Select your role
+              </label>
+
+              {/* Role cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                {[
+                  { id: "student", icon: BookOpen, label: "Student", desc: "Track wellness & access support" },
+                  { id: "counsellor", icon: Stethoscope, label: "Counsellor", desc: "Help students & manage sessions" },
+                  { id: "admin", icon: Lock, label: "Admin", desc: "Manage platform & users" },
+                ].map(({ id, icon: Icon, label, desc }) => (
+                  <Motion.button
+                    key={id}
+                    type="button"
+                    onClick={() => setSelectedRole(id)}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{
+                      padding: "14px 12px",
+                      borderRadius: 12,
+                      border: `2px solid ${selectedRole === id ? C.sage : C.sandDark}`,
+                      background: selectedRole === id ? C.sagePale : "#fff",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 8,
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedRole !== id) {
+                        e.currentTarget.style.borderColor = C.sageLight;
+                        e.currentTarget.style.background = C.cream;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedRole !== id) {
+                        e.currentTarget.style.borderColor = C.sandDark;
+                        e.currentTarget.style.background = "#fff";
+                      }
+                    }}
+                  >
+                    {/* Glow effect for selected */}
+                    {selectedRole === id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: `radial-gradient(circle, ${C.sage}20 0%, transparent 70%)`,
+                          pointerEvents: "none",
+                        }}
+                      />
+                    )}
+
+                    <Icon size={20} color={selectedRole === id ? C.sage : C.muted} />
+                    <div style={{ fontSize: 13, fontWeight: 600, color: C.ink, textAlign: "center" }}>
+                      {label}
+                    </div>
+                    <div style={{ fontSize: 10, color: C.muted, textAlign: "center", lineHeight: 1.4 }}>
+                      {desc}
+                    </div>
+                  </Motion.button>
+                ))}
+              </div>
+            </Motion.div>
+
+            {/* Role-specific helper text */}
+            <Motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.45, duration: 0.5 }}
+              style={{
+                padding: "12px 14px",
+                background: selectedRole === "student" ? C.sagePale : selectedRole === "counsellor" ? C.skyPale : C.lavPale,
+                border: `1px solid ${selectedRole === "student" ? C.sageLight : selectedRole === "counsellor" ? "#D6E8D9" : "#E8E0F0"}`,
+                borderRadius: 10,
+                fontSize: 12,
+                color: selectedRole === "student" ? C.sageMid : selectedRole === "counsellor" ? C.skyBlue : C.lavender,
+                marginBottom: 24,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <Sparkles size={14} />
+              <span>
+                {selectedRole === "student"
+                  ? "Track your mental wellness journey safely and privately."
+                  : selectedRole === "counsellor"
+                    ? "Create a professional counsellor account to support students. Verified professionals only."
+                    : "Admin access requires verification. Enter your access code below."}
+              </span>
+            </Motion.div>
+
+            {/* Name field */}
+            <Motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
               style={{ marginBottom: 18 }}
             >
               <label
@@ -395,7 +509,7 @@ export default function Signup() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Priya Sharma"
+                placeholder={selectedRole === "counsellor" ? "Dr. Sarah Johnson" : "Priya Sharma"}
                 style={{
                   width: "100%",
                   padding: "12px 14px",
@@ -418,7 +532,7 @@ export default function Signup() {
             <Motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45, duration: 0.5 }}
+              transition={{ delay: 0.55, duration: 0.5 }}
               style={{ marginBottom: 18 }}
             >
               <label
@@ -438,7 +552,7 @@ export default function Signup() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="priya@university.edu"
+                placeholder={selectedRole === "counsellor" ? "sarah@counselling.org" : "priya@university.edu"}
                 style={{
                   width: "100%",
                   padding: "12px 14px",
@@ -461,7 +575,7 @@ export default function Signup() {
             <Motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
               style={{ marginBottom: 18 }}
             >
               <label
@@ -530,7 +644,7 @@ export default function Signup() {
             <Motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55, duration: 0.5 }}
+              transition={{ delay: 0.65, duration: 0.5 }}
               style={{ marginBottom: 18 }}
             >
               <label
@@ -567,7 +681,7 @@ export default function Signup() {
                     boxSizing: "border-box",
                   }}
                   onFocus={(e) => (e.target.style.borderColor = C.sage)}
-                  onBlur={(e) => (e.target.style.borderColor = C.sandDark)}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = C.sandDark)}
                 />
                 <button
                   type="button"
@@ -595,55 +709,61 @@ export default function Signup() {
               </div>
             </Motion.div>
 
-            {/* Admin code field */}
-            <Motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              style={{ marginBottom: 24 }}
-            >
-              <label
-                htmlFor="adminCode"
-                style={{
-                  display: "block",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: C.ink,
-                  marginBottom: 8,
-                }}
+            {/* Admin code field - ONLY visible when admin role selected */}
+            {selectedRole === "admin" && (
+              <Motion.div
+                initial={{ opacity: 0, y: 15, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, y: -15, height: 0 }}
+                transition={{ duration: 0.4 }}
+                style={{ marginBottom: 18, overflow: "hidden" }}
               >
-                Admin code{" "}
-                <span style={{ color: C.muted, fontWeight: 400 }}>(optional)</span>
-              </label>
-              <input
-                id="adminCode"
-                type="password"
-                value={adminCode}
-                onChange={(e) => setAdminCode(e.target.value)}
-                placeholder="Leave blank if not needed"
-                style={{
-                  width: "100%",
-                  padding: "12px 14px",
-                  fontSize: 14,
-                  border: `1.5px solid ${C.sandDark}`,
-                  borderRadius: 12,
-                  fontFamily: "inherit",
-                  background: "#fff",
-                  color: C.ink,
-                  transition: "all 0.3s ease",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = C.sage)}
-                onBlur={(e) => (e.target.style.borderColor = C.sandDark)}
-              />
-            </Motion.div>
+                <label
+                  htmlFor="adminCode"
+                  style={{
+                    display: "block",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: C.ink,
+                    marginBottom: 8,
+                  }}
+                >
+                  Admin Access Code{" "}
+                  <span style={{ color: C.error, fontWeight: 600 }}>*</span>
+                </label>
+                <input
+                  id="adminCode"
+                  type="password"
+                  value={adminCode}
+                  onChange={(e) => setAdminCode(e.target.value)}
+                  placeholder="Enter your admin access code"
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    fontSize: 14,
+                    border: `1.5px solid ${C.sandDark}`,
+                    borderRadius: 12,
+                    fontFamily: "inherit",
+                    background: "#fff",
+                    color: C.ink,
+                    transition: "all 0.3s ease",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = C.sage)}
+                  onBlur={(e) => (e.target.style.borderColor = C.sandDark)}
+                />
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 6 }}>
+                  Required to create an admin account. Contact system administrator if you don't have one.
+                </div>
+              </Motion.div>
+            )}
 
             {/* Submit button */}
             <Motion.button
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.65, duration: 0.5 }}
+              transition={{ delay: selectedRole === "admin" ? 0.75 : 0.7, duration: 0.5 }}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
@@ -665,14 +785,14 @@ export default function Signup() {
                 gap: 8,
               }}
             >
-              {loading ? "Creating your account..." : <>Create free account <ArrowRight size={16} /></>}
+              {loading ? `Creating your ${selectedRole} account...` : <>Create free account <ArrowRight size={16} /></>}
             </Motion.button>
 
             {/* Security notice */}
             <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.5 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
               style={{
                 display: "flex",
                 alignItems: "center",
